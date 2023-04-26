@@ -1,5 +1,5 @@
 import webbrowser
-from PySide6.QtCore import QTimer, Qt, QSize, QPoint, QRect,QUrl
+from PySide6.QtCore import QTimer, Qt, QSize, QPoint, QRect, QUrl
 from PySide6.QtGui import QIcon, QAction, QLinearGradient, QColor, QPainter
 from PySide6.QtWidgets import QWidget, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QGraphicsBlurEffect
 from PySide6.QtWidgets import QApplication, QLabel, QSystemTrayIcon, QMenu, QMessageBox
@@ -86,10 +86,9 @@ class Event(QWidget):
             lambda: self.postpone_notification(0.1))
         self.postpone_1hour_button.clicked.connect(
             lambda: self.postpone_notification(0.1))
-        
-        self.play_sound()
-        
-        
+
+        self.player = QMediaPlayer()
+        self.audio = QAudioOutput()
 
     def set_style_form_gui(self):
         self.setWindowOpacity(0.9)
@@ -104,17 +103,13 @@ class Event(QWidget):
         self.close()
 
     def play_sound(self):
-        filename = "./event.mp3"
-        player = QMediaPlayer(self)
-        audio_output = QAudioOutput()
-        player.setAudioOutput(audio_output)
-        player.setSource(QUrl.fromLocalFile(filename))
-        audio_output.setVolume(100)
-        player.play()
+        self.player.setAudioOutput(self.audio)
+        self.player.setSource(QUrl.fromLocalFile("./event.mp3"))
+        self.audio.setVolume(100)
+        self.player.play()
 
     def showEvent(self, *any_kwarg):
         self.show()
-        
 
     def postpone_notification(self, delay_minutes):
         self.hide()

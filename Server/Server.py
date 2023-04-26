@@ -43,6 +43,7 @@ class Server(QObject):
     def create_event_form(self, step, body):
         windows_event = Event(step, body)
         windows_event.show()
+        windows_event.play_sound()
 
     def post_server_response(self, body: any):
 

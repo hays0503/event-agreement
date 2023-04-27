@@ -3,6 +3,7 @@ from aiohttp import web
 from Common.Tread_with_trace_qtread import ThreadWithTrace
 from Common.get_interface_ip_address import get_interface_ip_address
 from FormEvent.Event import Event
+from FormEvent.InfoMsg import InfoMsg
 
 
 class Server(QObject):
@@ -44,8 +45,11 @@ class Server(QObject):
         return web.json_response(response_body)
 
     @Slot(int, dict)
-    def create_event_form(self, step, body):        
-        self.windows_event.append([Event(step, body),body,step])
+    def create_event_form(self, step, body):
+        if(body["type"]=="new_document"):        
+            self.windows_event.append([Event(step, body),body,step])
+        if(body["type"]=="info_msg"):        
+            self.windows_event.append([InfoMsg(step, body),body,step])
         current = len(self.windows_event)-1
         windows_gui = 0
         self.windows_event[current][windows_gui].close_event.connect(self.minimize_space)
@@ -90,6 +94,13 @@ class Server(QObject):
 
         # try:
         if (body["type"] == "new_document"):
+            self.create_event.emit(self.step, body)
+            if (self.step <= 4):
+                self.step = self.step + 1
+            else:
+                self.step = 1            
+            return "Ответ"
+        if (body["type"] == "info_msg"):
             self.create_event.emit(self.step, body)
             if (self.step <= 4):
                 self.step = self.step + 1

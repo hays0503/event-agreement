@@ -1,14 +1,14 @@
 import webbrowser
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtCore import QTimer, Qt, QSize, QPoint, QRect, QUrl
-from PySide6.QtGui import QIcon, QAction, QLinearGradient, QColor, QPainter
+from PySide6.QtGui import QIcon, QAction, QLinearGradient, QColor, QPainter, QPixmap
 from PySide6.QtWidgets import QWidget, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QGraphicsBlurEffect
 from PySide6.QtWidgets import QApplication, QLabel, QSystemTrayIcon, QMenu, QMessageBox
 from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
 import random
 
 
-class Event(QWidget):
+class InfoMsg(QWidget):
     close_event = Signal(int)
 
     def __init__(self, _step: int, _body: dict):
@@ -22,13 +22,28 @@ class Event(QWidget):
 
         main_layout = QVBoxLayout(self)
         self.setStyleSheet(
-            "background-color: #AAAAAA; opacity: 1;")
+            "background-color: #FFFFAA; opacity: 1;")
 
-        messages_layout = QVBoxLayout()
+        messages_layout = QHBoxLayout()
 
         Text = str(self.body["msg"])
 
         TextMessages = QLabel(Text)
+        TextMessages.setWordWrap(True)
+        # обработка текста и добавление переноса строки при необходимости
+        if len(TextMessages.text()) > 70:
+            new_text = ""
+            words = TextMessages.text().split()
+            line_length = 0
+            for word in words:
+                if line_length + len(word) > 70:
+                    new_text += "\n"
+                    line_length = 0
+                new_text += word + " "
+                line_length += len(word) + 1
+            TextMessages.setText(new_text.strip())
+
+        
         messages_layout.addWidget(TextMessages)
 
         # Устанавливаем флаги для виджета
@@ -57,41 +72,26 @@ class Event(QWidget):
         self.setWindowTitle("Пример окна с кнопками")
 
         if (self.body["url"] != "None"):
-            self.open_document_button = QPushButton("Открыть договор", self)
+            self.open_document_button = QPushButton("Открыть информацию", self)
             self.open_document_button.setStyleSheet(
-                "background-color: #4285f4; color: #000000; opacity: 1;")
+                "background-color: #00FF00; color: #000000; opacity: 1;")
             h_box.addWidget(self.open_document_button)
             self.open_document_button.clicked.connect(self.open_document)
         ###############################################
 
-        self.postpone_5min_button = QPushButton("Отложить на 5 минут", self)
-        self.postpone_5min_button.setStyleSheet(
-            "background-color: #00ffff; color: #000000; opacity: 1;")
-
-        self.postpone_15min_button = QPushButton("Отложить на 15 минут", self)
-        self.postpone_15min_button.setStyleSheet(
-            "background-color: #ff00ff; color: #000000; opacity: 1;")
-
-        self.postpone_1hour_button = QPushButton("Отложить на 1 час", self)
-        self.postpone_1hour_button.setStyleSheet(
-            "background-color: #ffff00; color: #000000; opacity: 1;")
-
-        h_box.addWidget(self.postpone_5min_button)
-        h_box.addWidget(self.postpone_15min_button)
-        h_box.addWidget(self.postpone_1hour_button)
+        if(self.body["type"] == "info_msg"):
+            # создание объекта QPixmap и загрузка изображения
+            pixmap = QPixmap("./info_icon.svg")
+            pixmap.scaled(8, 8)
+            # создание объекта QLabel и установка изображения в него
+            picture_icon = QLabel()            
+            picture_icon.setPixmap(pixmap)            
+            messages_layout.addWidget(picture_icon)
 
         main_layout.addLayout(messages_layout)
         main_layout.addLayout(h_box)
 
         self.setLayout(main_layout)
-
-        # подключение обработчиков событий
-        self.postpone_5min_button.clicked.connect(
-            lambda: self.postpone_notification(0.1))
-        self.postpone_15min_button.clicked.connect(
-            lambda: self.postpone_notification(0.1))
-        self.postpone_1hour_button.clicked.connect(
-            lambda: self.postpone_notification(0.1))
 
         self.player = QMediaPlayer()
         self.audio = QAudioOutput()
@@ -123,7 +123,7 @@ class Event(QWidget):
     def showEvent(self, *any_kwarg):
         self.show()
 
-    def closeEvent(self,event):
+    def closeEvent(self):
         self.play_sound_read()
 
     def postpone_notification(self, delay_minutes):

@@ -1,4 +1,5 @@
 import webbrowser
+from PySide6.QtCore import Signal, Slot
 from PySide6.QtCore import QTimer, Qt, QSize, QPoint, QRect, QUrl
 from PySide6.QtGui import QIcon, QAction, QLinearGradient, QColor, QPainter
 from PySide6.QtWidgets import QWidget, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QGraphicsBlurEffect
@@ -8,6 +9,8 @@ import random
 
 
 class Event(QWidget):
+    close_event = Signal(int)
+
     def __init__(self, _step: int, _body: dict):
         super().__init__()
         self.step = _step
@@ -47,12 +50,19 @@ class Event(QWidget):
         self.setGeometry(QRect(widget_pos, widget_size))
 
         ###############################################
+        # создание горизонтального менеджера компоновки
+        h_box = QHBoxLayout()
+
+        ###############################################
         self.setWindowTitle("Пример окна с кнопками")
 
-        # создание кнопок
-        self.open_document_button = QPushButton("Открыть договор", self)
-        self.open_document_button.setStyleSheet(
-            "background-color: #4285f4; color: #000000; opacity: 1;")
+        if (self.body["url"] != "None"):
+            self.open_document_button = QPushButton("Открыть договор", self)
+            self.open_document_button.setStyleSheet(
+                "background-color: #4285f4; color: #000000; opacity: 1;")
+            h_box.addWidget(self.open_document_button)
+            self.open_document_button.clicked.connect(self.open_document)
+        ###############################################
 
         self.postpone_5min_button = QPushButton("Отложить на 5 минут", self)
         self.postpone_5min_button.setStyleSheet(
@@ -66,9 +76,6 @@ class Event(QWidget):
         self.postpone_1hour_button.setStyleSheet(
             "background-color: #ffff00; color: #000000; opacity: 1;")
 
-        # создание горизонтального менеджера компоновки
-        h_box = QHBoxLayout()
-        h_box.addWidget(self.open_document_button)
         h_box.addWidget(self.postpone_5min_button)
         h_box.addWidget(self.postpone_15min_button)
         h_box.addWidget(self.postpone_1hour_button)
@@ -79,7 +86,6 @@ class Event(QWidget):
         self.setLayout(main_layout)
 
         # подключение обработчиков событий
-        self.open_document_button.clicked.connect(self.open_document)
         self.postpone_5min_button.clicked.connect(
             lambda: self.postpone_notification(0.1))
         self.postpone_15min_button.clicked.connect(
@@ -98,18 +104,28 @@ class Event(QWidget):
 
     def open_document(self):
         # Открываем браузер с договором
-        webbrowser.open(
-            "http://192.168.0.9:3000/document-control/signing/documents-for-signing?id=121")
+        if (self.body["url"] != "None"):
+            webbrowser.open(self.body["url"])
         self.close()
 
-    def play_sound(self):
+    def play_sound_new_document(self):
         self.player.setAudioOutput(self.audio)
         self.player.setSource(QUrl.fromLocalFile("./event.mp3"))
         self.audio.setVolume(100)
         self.player.play()
 
+    def play_sound_read(self):
+        self.player.setAudioOutput(self.audio)
+        self.player.setSource(QUrl.fromLocalFile("./read.mp3"))
+        self.audio.setVolume(100)
+        self.player.play()
+
     def showEvent(self, *any_kwarg):
         self.show()
+
+    def closeEvent(self, event):
+        self.play_sound_read()
+        self.close_event.emit(self.step)
 
     def postpone_notification(self, delay_minutes):
         self.hide()

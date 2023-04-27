@@ -1,0 +1,44 @@
+
+// Новый документ
+{
+    "id":1,
+    "type":"new_document",
+    "msg":"lorem ipsum",
+    "url":"http://google.com"
+}
+
+
+// Документ прочитан
+{
+    "id":1,
+    "type":"read_document",
+    "msg":"lorem ipsum",
+    "url":"http://google.com"
+}
+
+// Сообщение с информацией 
+// (например введен новый функционал)
+{
+    "id":1,
+    "type":"info_msg",
+    "msg":"lorem ipsum",
+    "url":"http://google.com"
+}
+
+// Сообщение с информацией важной
+// (например что то сломалось)
+{
+    "id":1,
+    "type":"info_msg_warning",
+    "msg":"lorem ipsum",
+    "url":"http://google.com"
+}
+
+// Сообщение о технической работе сервиса(технические работы)
+// (сообщение о профилактике / перезагрузки итд)
+{
+    "id":1,
+    "type":"info_msg_works",
+    "msg":"lorem ipsum",
+    "url":"http://google.com"
+}

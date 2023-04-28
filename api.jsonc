@@ -40,3 +40,20 @@
     "msg":"lorem ipsum",
     "url":"http://google.com"
 }
+
+// То что отсылаю в ответ на отложенное уведомление
+json_msg = {
+            
+    "id":self.body["id"],
+    "ip_host":str(ip_address)+"8888",
+    "timestamp_received":self.timestamp_received.isoformat(),
+    "status":"delay",
+    "timestamp_delay":str(delay_minutes)+"min"
+} 
+{
+    "id": 1,
+    "ip_host": "192.168.0.348888",
+    "timestamp_received": "2023-04-28T17: 18: 45.382966",
+    "status": "delay",
+    "timestamp_delay": "0.1min"
+}

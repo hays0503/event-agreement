@@ -113,7 +113,6 @@ class Server(QObject):
             self.windows_event.append(InfoMsg(step, body))
         current = len(self.windows_event)-1
         self.windows_event[current].close_event.connect(self.close_windows)
-        self.windows_event[current].hide_event.connect(self.minimize_space)
         self.windows_event[current].revert_hide_event.connect(self.revert_minimize_space)
         self.windows_event[current].play_sound_new_document()
         self.v_box_Layout.addWidget(self.windows_event[current])
@@ -137,37 +136,6 @@ class Server(QObject):
         print("###########")
         if len(self.windows_event) == 0:
             self.list_windows.hide()
-
-    @Slot(int)
-    def minimize_space(self, delete_index: int):
-        pass
-        # print("self.windows_event ",self.windows_event)
-        # print("minimize_space ",delete_index)
-        # if(delete_index>=len(self.windows_event)):
-        #     return
-        # windows_gui = 0
-
-        # if(self.step>1):
-        #     self.step-=1
-
-        # x = int(self.windows_event[delete_index][windows_gui].pos().x())
-        # y = int(self.windows_event[delete_index][windows_gui].pos().y())
-        # h = int(self.windows_event[delete_index][windows_gui].height())
-        # self.windows_event[delete_index][windows_gui].move((x),(y+h))
-        # self.minimize_space(delete_index+1)
-
-    @Slot(dict)
-    def read_event_form(self, body):
-        pass
-        # windows_gui = 0
-        # json_event_old = 1
-
-        # for _index, item in enumerate(self.windows_event):
-        #     #Если нашли закрываем окно и удаляем окно
-        #     if(item[json_event_old]["id"] == body["id"]):
-        #         item[windows_gui].close()
-        #         self.windows_event.pop(_index)
-        #         self.minimize_space(_index)
 
     def post_server_response(self, body: any):
 

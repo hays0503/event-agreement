@@ -43,13 +43,13 @@
 
 // То что отсылаю в ответ на отложенное уведомление
 json_msg = {
-            
-    "id":self.body["id"],
-    "ip_host":str(ip_address)+"8888",
-    "timestamp_received":self.timestamp_received.isoformat(),
-    "status":"delay",
-    "timestamp_delay":str(delay_minutes)+"min"
-} 
+    "id": self.body["id"],
+    "ip_host": str(ip_address)+"8888",
+    "timestamp_received": self.timestamp_received.isoformat(),
+    "status": "delay",
+    "timestamp_delay": str(delay_minutes)+"min"
+    "user data": {"login": user_data.get_login(), "domain_name": user_data.get_domain_name()}
+}
 {
     "id": 1,
     "ip_host": "192.168.0.348888",

@@ -1,23 +1,9 @@
-from PySide6.QtCore import QUrl
-from PySide6.QtWidgets import QApplication, QPushButton
-from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-
-app = QApplication()
-
-player = QMediaPlayer()
-audio = QAudioOutput()
-
-player.setAudioOutput(audio)
-audio.setVolume(100)
 
 
-def play():
-    player.setSource(QUrl.fromLocalFile("./event.mp3"))
-    player.play()
+username = os.getlogin()
+print("Имя пользователя:", username)
 
 
-button = QPushButton("Play")
-button.clicked.connect(play)
-button.show()
 
-app.exec()
+domain_name = socket.getfqdn()
+print("Название домена:", domain_name)

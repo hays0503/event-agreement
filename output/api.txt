@@ -1,0 +1,66 @@
+//Отправляю сюда = "http://192.168.0.9:5000/"
+
+
+// Информация при включении от пк пользователя
+{
+    "ip_host": "192.168.0.34:8888",
+    "time_start":"2023-05-02T10:58:16.911462",    
+    "status": "start",
+    "user data": {"login": "PimenovSG", "domain_name": "OITIB-8.zik.loc"}
+}
+
+
+
+// Новый документ
+{
+    "id":1,
+    "type":"new_document",
+    "msg":"lorem ipsum",
+    "url":"http://google.com"
+}
+
+
+// Сообщение с информацией 
+// (например введен новый функционал)
+{
+    "id":1,
+    "type":"info_msg",
+    "msg":"lorem ipsum",
+    "url":"http://google.com"
+}
+
+// Сообщение с информацией важной
+// (например что то сломалось)
+{
+    "id":1,
+    "type":"info_msg_warning",
+    "msg":"lorem ipsum",
+    "url":"http://google.com"
+}
+
+// Сообщение о технической работе сервиса(технические работы)
+// (сообщение о профилактике / перезагрузки итд)
+{
+    "id":1,
+    "type":"info_msg_works",
+    "msg":"lorem ipsum",
+    "url":"http://google.com"
+}
+
+// То что отсылаю в ответ на отложенное уведомление
+{
+    "id": 1,
+    "ip_host": "192.168.0.34:8888",
+    "timestamp_received": "2023-05-02T10:58:16.911462",
+    "status": "delay",
+    "timestamp_delay": "0.1min",
+    "user data": {"login": "PimenovSG", "domain_name": "OITIB-8.zik.loc"}
+}
+
+// Документ прочитан (отсылается сервером о факте того что клиент зашел и прочитал документ)
+{
+    "id":1,
+    "type":"read_document",
+    "msg":"lorem ipsum",
+    "url":"http://google.com"
+}

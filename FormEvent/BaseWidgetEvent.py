@@ -1,3 +1,5 @@
+import os
+import sys
 from PySide6.QtCore import Signal
 from PySide6.QtCore import Qt, QSize, QPoint, QRect, QUrl
 from PySide6.QtGui import QPixmap
@@ -33,6 +35,16 @@ class BaseWidgetEvent(QWidget):
         self.setFixedSize(QSize(550, 300))
         ###############################################
 
+    def resource_path(self,relative_path):
+        """ Get absolute path to resource, works for dev and for PyInstaller """
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)
+
     def create_base_form_gui(self):
         # Базовый вертикальный макет
         self.main_layout = QVBoxLayout(self)
@@ -52,7 +64,8 @@ class BaseWidgetEvent(QWidget):
         # Создаем с такой картинкой виджет
         if (self.base_body["type"] == "info_msg"):
             # создание объекта QPixmap и загрузка изображения
-            pixmap = QPixmap("./info_icon.png")
+            patch = self.resource_path("./icon/info_icon.png")
+            pixmap = QPixmap(patch)
             pixmap.scaled(8, 8)
             # создание объекта QLabel и установка изображения в него
             picture_icon = QLabel()
@@ -62,7 +75,8 @@ class BaseWidgetEvent(QWidget):
         # Сообщение с информацией важной
         if (self.base_body["type"] == "info_msg_warning"):
             # создание объекта QPixmap и загрузка изображения
-            pixmap = QPixmap("./info_msg_warning.png")
+            patch = self.resource_path("./icon/info_msg_warning.png")
+            pixmap = QPixmap(patch)
             pixmap.scaled(8, 8)
             # создание объекта QLabel и установка изображения в него
             picture_icon = QLabel()
@@ -72,7 +86,8 @@ class BaseWidgetEvent(QWidget):
         # Сообщение о технической работе сервиса(технические работы)
         if (self.base_body["type"] == "info_msg_works"):
             # создание объекта QPixmap и загрузка изображения
-            pixmap = QPixmap("./info_msg_works.png")
+            patch = self.resource_path("./icon/info_msg_works.png")
+            pixmap = QPixmap(patch)
             pixmap.scaled(8, 8)
             # создание объекта QLabel и установка изображения в него
             picture_icon = QLabel()
@@ -105,13 +120,15 @@ class BaseWidgetEvent(QWidget):
 
     def play_sound_new_document(self):
         self.player.setAudioOutput(self.audio)
-        self.player.setSource(QUrl.fromLocalFile("./event.mp3"))
+        patch = self.resource_path("./sound/event.mp3")
+        self.player.setSource(QUrl.fromLocalFile(patch))
         self.audio.setVolume(100)
         self.player.play()
 
     def play_sound_read(self):
         self.player.setAudioOutput(self.audio)
-        self.player.setSource(QUrl.fromLocalFile("./read.mp3"))
+        patch = self.resource_path("./sound/read.mp3")
+        self.player.setSource(QUrl.fromLocalFile(patch))
         self.audio.setVolume(100)
         self.player.play()
 

@@ -1,6 +1,7 @@
 from PySide6.QtCore import QObject, Signal, Slot
 from aiohttp import web
 from Common.Tread_with_trace_qtread import ThreadWithTrace
+from Common.UserData import UserData
 from Common.get_interface_ip_address import get_interface_ip_address
 from FormEvent.Event import Event
 from FormEvent.InfoMsg import InfoMsg
@@ -11,6 +12,9 @@ from PySide6.QtCore import Qt, QRect
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGraphicsBlurEffect
 from PySide6.QtWidgets import QApplication, QScrollArea
 
+import datetime
+
+from Server.send_post_async import send_post
 
 class Server(QObject):
     create_event = Signal(dict)
@@ -75,9 +79,26 @@ class Server(QObject):
         ip_address = get_interface_ip_address(interface_name)
         web.run_app(host=ip_address, port=8888, app=app)
 
+    def send_power_on(self):
+        user_data = UserData()
+        interface_name = "Ethernet"
+        ip_address = get_interface_ip_address(interface_name)
+        login = user_data.get_login()
+        domain = user_data.get_domain_name()
+        json_msg = {
+            "ip_host": str(ip_address)+':'+"8888",
+            "time_start": datetime.datetime.now().isoformat(),
+            "status": "start",
+            "user data":  {"login": login, "domain_name": domain}
+        }
+        print(json_msg)
+        send_post("http://192.168.0.9:5000/", json_msg)
+
     def run_tread(self):
         self.server_threads = ThreadWithTrace(function=self.start_server)
         self.server_threads.start()
+        self.send_power_on()
+        
 
     async def post_func(self, request):
         #########################################

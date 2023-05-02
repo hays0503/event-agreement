@@ -1,3 +1,15 @@
+//Отправляю сюда = "http://192.168.0.9:5000/"
+
+
+// Информация при включении от пк пользователя
+{
+    "ip_host": "192.168.0.34:8888",
+    "time_start":"2023-05-02T10:58:16.911462",    
+    "status": "start",
+    "user data": {"login": "PimenovSG", "domain_name": "OITIB-8.zik.loc"}
+}
+
+
 
 // Новый документ
 {
@@ -42,7 +54,8 @@
     "timestamp_received": "2023-05-02T10:58:16.911462",
     "status": "delay",
     "timestamp_delay": "0.1min",
-    "user data": {"login": "PimenovSG", "domain_name": "OITIB-8.zik.loc"}}
+    "user data": {"login": "PimenovSG", "domain_name": "OITIB-8.zik.loc"}
+}
 
 // Документ прочитан (отсылается сервером о факте того что клиент зашел и прочитал документ)
 {

@@ -8,7 +8,7 @@ from FormEvent.InfoMsg import InfoMsg
 
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtCore import Qt, QRect
-from PySide6.QtWidgets import QWidget, QVBoxLayout,QGraphicsBlurEffect
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QGraphicsBlurEffect
 from PySide6.QtWidgets import QApplication, QScrollArea
 
 
@@ -23,7 +23,6 @@ class Server(QObject):
         self.read_event.connect(self.close_windows)
         self.windows_event = []
         self.list_windows = None
-
 
     def create_gui(self):
         self.list_windows = QWidget()
@@ -56,7 +55,7 @@ class Server(QObject):
         self.list_windows.setLayout(QVBoxLayout())
         self.list_windows.layout().addWidget(self.scroll_area)
         self.list_windows.setWindowFlags(
-        Qt.WindowStaysOnTopHint | Qt.CustomizeWindowHint | Qt.FramelessWindowHint | Qt.Tool)
+            Qt.WindowStaysOnTopHint | Qt.CustomizeWindowHint | Qt.FramelessWindowHint | Qt.Tool)
         #####################################################################################
         self.set_style_form_gui()
         self.list_windows.show()
@@ -94,47 +93,57 @@ class Server(QObject):
         return web.json_response(response_body)
 
     @Slot(dict)
-    def create_event_form(self,body):
+    def create_event_form(self, body):
         if len(self.windows_event) == 0:
             if self.list_windows == None:
                 self.create_gui()
             else:
                 self.list_windows.show()
-            
+
         print("create_event_form")
         print("body=", body)
         if (body["type"] == "new_document"):
             self.windows_event.append(Event(body))
-        if (body["type"] == "info_msg"):
+        elif (body["type"] == "info_msg"):
             self.windows_event.append(InfoMsg(body))
+        elif (body["type"] == "info_msg_warning"):
+            self.windows_event.append(InfoMsg(body))
+        elif (body["type"] == "info_msg_works"):
+            self.windows_event.append(InfoMsg(body))
+        else:
+            print("Не известный тип окна")
+            return
+
         current = len(self.windows_event)-1
         self.windows_event[current].close_event.connect(self.close_windows)
-        self.windows_event[current].revert_hide_event.connect(self.revert_minimize_space)
+        self.windows_event[current].revert_hide_event.connect(
+            self.revert_minimize_space)
         self.windows_event[current].play_sound_new_document()
         self.v_box_Layout.addWidget(self.windows_event[current])
-        
-    
-    @Slot(dict)
-    def revert_minimize_space(self,body):
-        self.create_event_form(body)
 
+    @Slot(dict)
+    def revert_minimize_space(self, body):
+        self.create_event_form(body)
 
     @Slot(int)
     def close_windows(self, id: int):
-        for item in self.windows_event:
+        print("close_windows")
+        for _index, item in enumerate(self.windows_event):
+            print(item.body["id"])
+            print("id ", id)
             if item.body["id"] == id:
-                try:
+                if(self.windows_event[_index].isVisible()):
                     # Пробуем закрыть окно
-                    item.close()
-                except Exception as e:
-                    pass
-                self.windows_event.remove(item)
-                
+                    self.windows_event[_index].hide()
+                # Пробуем удалить элемент
+                self.windows_event.pop(_index)
+        # Если окна в области просмотра закончились закрываем область просмотра
         if len(self.windows_event) == 0:
             try:
                 self.list_windows.hide()
             except Exception as e:
                 print(e)
+        print("self.windows_event", self.windows_event)
 
     def post_server_response(self, body: any):
         # try:
@@ -142,6 +151,12 @@ class Server(QObject):
             self.create_event.emit(body)
             return "Ответ"
         if (body["type"] == "info_msg"):
+            self.create_event.emit(body)
+            return "Ответ"
+        if (body["type"] == "info_msg_warning"):
+            self.create_event.emit(body)
+            return "Ответ"
+        if (body["type"] == "info_msg_works"):
             self.create_event.emit(body)
             return "Ответ"
         if (body["type"] == "read_document"):

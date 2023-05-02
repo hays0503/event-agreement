@@ -6,13 +6,7 @@
     "msg":"lorem ipsum",
     "url":"http://google.com"
 }
-// Документ прочитан
-{
-    "id":1,
-    "type":"read_document",
-    "msg":"lorem ipsum",
-    "url":"http://google.com"
-}
+
 
 // Сообщение с информацией 
 // (например введен новый функционал)
@@ -42,14 +36,6 @@
 }
 
 // То что отсылаю в ответ на отложенное уведомление
-json_msg = {
-    "id": self.body["id"],
-    "ip_host": str(ip_address)+"8888",
-    "timestamp_received": self.timestamp_received.isoformat(),
-    "status": "delay",
-    "timestamp_delay": str(delay_minutes)+"min"
-    "user data": {"login": user_data.get_login(), "domain_name": user_data.get_domain_name()}
-}
 {
     "id": 1,
     "ip_host": "192.168.0.34:8888",
@@ -57,3 +43,11 @@ json_msg = {
     "status": "delay",
     "timestamp_delay": "0.1min",
     "user data": {"login": "PimenovSG", "domain_name": "OITIB-8.zik.loc"}}
+
+// Документ прочитан (отсылается сервером о факте того что клиент зашел и прочитал документ)
+{
+    "id":1,
+    "type":"read_document",
+    "msg":"lorem ipsum",
+    "url":"http://google.com"
+}

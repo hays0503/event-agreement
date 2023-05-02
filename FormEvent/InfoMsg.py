@@ -30,8 +30,10 @@ class InfoMsg(BaseWidgetEvent):
         ###############################################
 
     def closeEvent(self, event):
+        print("closeEvent")
         self.play_sound_read()
-        self.close()
+        self.close_event.emit(self.body["id"])
+        self.hide()
 
     def revert_close(self):
         print("revert_close")

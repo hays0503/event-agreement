@@ -52,7 +52,27 @@ class BaseWidgetEvent(QWidget):
         # Создаем с такой картинкой виджет
         if (self.base_body["type"] == "info_msg"):
             # создание объекта QPixmap и загрузка изображения
-            pixmap = QPixmap("./info_icon.svg")
+            pixmap = QPixmap("./info_icon.png")
+            pixmap.scaled(8, 8)
+            # создание объекта QLabel и установка изображения в него
+            picture_icon = QLabel()
+            picture_icon.setPixmap(pixmap)
+            self.messages_layout.addWidget(picture_icon)
+        
+        # Сообщение с информацией важной
+        if (self.base_body["type"] == "info_msg_warning"):
+            # создание объекта QPixmap и загрузка изображения
+            pixmap = QPixmap("./info_msg_warning.png")
+            pixmap.scaled(8, 8)
+            # создание объекта QLabel и установка изображения в него
+            picture_icon = QLabel()
+            picture_icon.setPixmap(pixmap)
+            self.messages_layout.addWidget(picture_icon)
+        
+        # Сообщение о технической работе сервиса(технические работы)
+        if (self.base_body["type"] == "info_msg_works"):
+            # создание объекта QPixmap и загрузка изображения
+            pixmap = QPixmap("./info_msg_works.png")
             pixmap.scaled(8, 8)
             # создание объекта QLabel и установка изображения в него
             picture_icon = QLabel()

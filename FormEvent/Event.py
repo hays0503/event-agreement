@@ -51,8 +51,10 @@ class Event(BaseWidgetEvent):
             lambda: self.postpone_notification(0.1))
 
     def closeEvent(self, event):
+        print("closeEvent")
         self.play_sound_read()
         self.close_event.emit(self.body["id"])
+        self.hide()
 
     def revert_close(self):
         print("revert_close")
@@ -63,4 +65,5 @@ class Event(BaseWidgetEvent):
         self.base_event.send_msg(delay_minutes)
         # Откладываем уведомление на delay_minutes минут
         QTimer.singleShot(delay_minutes * 60 * 1000, self.revert_close)
-        self.close()
+        self.close_event.emit(self.body["id"])
+        

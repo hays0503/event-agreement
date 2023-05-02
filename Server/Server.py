@@ -1,4 +1,3 @@
-from PySide6.QtWidgets import QListWidget
 from PySide6.QtCore import QObject, Signal, Slot
 from aiohttp import web
 from Common.Tread_with_trace_qtread import ThreadWithTrace
@@ -8,23 +7,20 @@ from FormEvent.InfoMsg import InfoMsg
 
 
 from PySide6.QtCore import Signal, Slot
-from PySide6.QtCore import QTimer, Qt, QSize, QPoint, QRect, QUrl
-from PySide6.QtGui import QIcon, QAction, QLinearGradient, QColor, QPainter
-from PySide6.QtWidgets import QWidget, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QGraphicsBlurEffect
-from PySide6.QtWidgets import QApplication, QLabel, QSystemTrayIcon, QMenu, QMessageBox, QScrollArea
-from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
+from PySide6.QtCore import Qt, QRect
+from PySide6.QtWidgets import QWidget, QVBoxLayout,QGraphicsBlurEffect
+from PySide6.QtWidgets import QApplication, QScrollArea
 
 
 class Server(QObject):
-    create_event = Signal(int, dict)
-    read_event = Signal(dict)
+    create_event = Signal(dict)
+    read_event = Signal(int)
     minimize_event = Signal()
 
     def __init__(self, parent: QObject | None = ...) -> None:
         super().__init__(parent)
         self.create_event.connect(self.create_event_form)
-        self.read_event.connect(self.read_event_form)
-        self.step = 1
+        self.read_event.connect(self.close_windows)
         self.windows_event = []
         self.list_windows = None
 
@@ -97,8 +93,8 @@ class Server(QObject):
         #########################################
         return web.json_response(response_body)
 
-    @Slot(int, dict)
-    def create_event_form(self, step, body):
+    @Slot(dict)
+    def create_event_form(self,body):
         if len(self.windows_event) == 0:
             if self.list_windows == None:
                 self.create_gui()
@@ -106,11 +102,11 @@ class Server(QObject):
                 self.list_windows.show()
             
         print("create_event_form")
-        print("step= ", step, " body=", body)
+        print("body=", body)
         if (body["type"] == "new_document"):
-            self.windows_event.append(Event(step, body))
+            self.windows_event.append(Event(body))
         if (body["type"] == "info_msg"):
-            self.windows_event.append(InfoMsg(step, body))
+            self.windows_event.append(InfoMsg(body))
         current = len(self.windows_event)-1
         self.windows_event[current].close_event.connect(self.close_windows)
         self.windows_event[current].revert_hide_event.connect(self.revert_minimize_space)
@@ -118,38 +114,38 @@ class Server(QObject):
         self.v_box_Layout.addWidget(self.windows_event[current])
         
     
-    @Slot(int, dict)
-    def revert_minimize_space(self, step, body):
-        self.create_event_form(step, body)
+    @Slot(dict)
+    def revert_minimize_space(self,body):
+        self.create_event_form(body)
 
 
     @Slot(int)
     def close_windows(self, id: int):
-        print("###########")
-        print("len(self.windows_event)=", len(self.windows_event))
-        print("id =", id)
         for item in self.windows_event:
             if item.body["id"] == id:
+                try:
+                    # Пробуем закрыть окно
+                    item.close()
+                except Exception as e:
+                    pass
                 self.windows_event.remove(item)
-                break
-        print("len(self.windows_event)=", len(self.windows_event))
-        print("###########")
+                
         if len(self.windows_event) == 0:
-            self.list_windows.hide()
+            try:
+                self.list_windows.hide()
+            except Exception as e:
+                print(e)
 
     def post_server_response(self, body: any):
-
         # try:
         if (body["type"] == "new_document"):
-            self.create_event.emit(self.step, body)
-            self.step = self.step + 1
+            self.create_event.emit(body)
             return "Ответ"
         if (body["type"] == "info_msg"):
-            self.create_event.emit(self.step, body)
-            self.step = self.step + 1
+            self.create_event.emit(body)
             return "Ответ"
         if (body["type"] == "read_document"):
-            self.read_event.emit(body)
+            self.read_event.emit(body["id"])
             return "Ответ"
 
         return "Ответа нет"

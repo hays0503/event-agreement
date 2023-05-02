@@ -52,8 +52,8 @@ json_msg = {
 }
 {
     "id": 1,
-    "ip_host": "192.168.0.348888",
-    "timestamp_received": "2023-04-28T17: 18: 45.382966",
+    "ip_host": "192.168.0.34:8888",
+    "timestamp_received": "2023-05-02T10:58:16.911462",
     "status": "delay",
-    "timestamp_delay": "0.1min"
-}
+    "timestamp_delay": "0.1min",
+    "user data": {"login": "PimenovSG", "domain_name": "OITIB-8.zik.loc"}}

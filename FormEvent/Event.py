@@ -6,6 +6,8 @@ from PySide6.QtWidgets import QApplication, QLabel
 from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
 
 from FormEvent.BaseWidgetEvent import BaseWidgetEvent
+from FormEvent.TimeSetter import TimeSetter
+
 
 class Event(BaseWidgetEvent):
     def __init__(self, _body: dict):
@@ -15,7 +17,7 @@ class Event(BaseWidgetEvent):
         self.create_base_form_gui()
         self.create_form_gui(_body)
 
-    def create_form_gui(self,_body):
+    def create_form_gui(self, _body):
 
         if (_body["url"] != "None"):
             self.open_document_button = QPushButton("Открыть договор", self)
@@ -33,22 +35,18 @@ class Event(BaseWidgetEvent):
         self.postpone_15min_button.setStyleSheet(
             "background-color: #ff00ff; color: #000000; opacity: 1;")
 
-        self.postpone_1hour_button = QPushButton("Отложить на 1 час", self)
-        self.postpone_1hour_button.setStyleSheet(
-            "background-color: #ffff00; color: #000000; opacity: 1;")
+        self.time_setter = TimeSetter()
 
         self.button_layout.addWidget(self.postpone_5min_button)
         self.button_layout.addWidget(self.postpone_15min_button)
-        self.button_layout.addWidget(self.postpone_1hour_button)
-
+        self.button_layout.addWidget(self.time_setter)
 
         # подключение обработчиков событий
         self.postpone_5min_button.clicked.connect(
-            lambda: self.postpone_notification(0.1))
+            lambda: self.postpone_notification(5))
         self.postpone_15min_button.clicked.connect(
-            lambda: self.postpone_notification(0.1))
-        self.postpone_1hour_button.clicked.connect(
-            lambda: self.postpone_notification(0.1))
+            lambda: self.postpone_notification(5))
+        self.time_setter.confirmed.connect(self.postpone_notification_hour)
 
     def closeEvent(self, event):
         print("closeEvent")
@@ -60,10 +58,19 @@ class Event(BaseWidgetEvent):
         print("revert_close")
         self.revert_hide_event.emit(self.body)
 
-    def postpone_notification(self, delay_minutes):
-        print("postpone_notification")
-        self.base_event.send_msg(delay_minutes)
+    def postpone_notification(self, delay):
+        delay_ms = delay * 60 * 1000
+        print("postpone_notification: ",delay)
+        self.base_event.send_msg(delay)
         # Откладываем уведомление на delay_minutes минут
-        QTimer.singleShot(delay_minutes * 60 * 1000, self.revert_close)
+        QTimer.singleShot(delay_ms, self.revert_close)
         self.close_event.emit(self.body["id"])
-        
+    
+    def postpone_notification_hour(self, delay):
+        delay_ms = delay * 60 * 1000 * 60
+        delay_min = delay * 60
+        print("postpone_notification: ",delay_min)
+        self.base_event.send_msg(delay_min)
+        # Откладываем уведомление на delay_minutes минут
+        QTimer.singleShot(delay_ms, self.revert_close)
+        self.close_event.emit(self.body["id"])

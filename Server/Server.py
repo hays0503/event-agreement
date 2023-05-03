@@ -5,16 +5,14 @@ from Common.UserData import UserData
 from Common.get_interface_ip_address import get_interface_ip_address
 from FormEvent.Event import Event
 from FormEvent.InfoMsg import InfoMsg
-
-
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtCore import Qt, QRect
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGraphicsBlurEffect
 from PySide6.QtWidgets import QApplication, QScrollArea
-
 import datetime
-
 from Server.send_post_async import send_post
+from Common.configparser import PORT_SERVER, HOST, config_sound_toggle, get_sound_toggle
+
 
 class Server(QObject):
     create_event = Signal(dict)
@@ -27,6 +25,7 @@ class Server(QObject):
         self.read_event.connect(self.close_windows)
         self.windows_event = []
         self.list_windows = None
+
 
     def create_gui(self):
         self.list_windows = QWidget()
@@ -64,6 +63,7 @@ class Server(QObject):
         self.set_style_form_gui()
         self.list_windows.show()
 
+
     def set_style_form_gui(self):
         self.list_windows.setWindowOpacity(0.8)
         blur = QGraphicsBlurEffect()
@@ -77,7 +77,7 @@ class Server(QObject):
         # Имя интерфейса, для которого нужно получить IP-адрес
         interface_name = "Ethernet"
         ip_address = get_interface_ip_address(interface_name)
-        web.run_app(host=ip_address, port=8888, app=app)
+        web.run_app(host=ip_address, port=PORT_SERVER, app=app)
 
     def send_power_on(self):
         user_data = UserData()
@@ -86,19 +86,18 @@ class Server(QObject):
         login = user_data.get_login()
         domain = user_data.get_domain_name()
         json_msg = {
-            "ip_host": str(ip_address)+':'+"8888",
+            "ip_host": str(ip_address)+':'+str(PORT_SERVER),
             "time_start": datetime.datetime.now().isoformat(),
             "status": "start",
             "user data":  {"login": login, "domain_name": domain}
         }
         print(json_msg)
-        send_post("http://192.168.0.9:5000/", json_msg)
+        send_post(str(HOST), json_msg)
 
     def run_tread(self):
         self.server_threads = ThreadWithTrace(function=self.start_server)
         self.server_threads.start()
         self.send_power_on()
-        
 
     async def post_func(self, request):
         #########################################
@@ -150,10 +149,8 @@ class Server(QObject):
     def close_windows(self, id: int):
         print("close_windows")
         for _index, item in enumerate(self.windows_event):
-            print(item.body["id"])
-            print("id ", id)
             if item.body["id"] == id:
-                if(self.windows_event[_index].isVisible()):
+                if (self.windows_event[_index].isVisible()):
                     # Пробуем закрыть окно
                     self.windows_event[_index].hide()
                 # Пробуем удалить элемент
@@ -164,7 +161,7 @@ class Server(QObject):
                 self.list_windows.hide()
             except Exception as e:
                 print(e)
-        print("self.windows_event", self.windows_event)
+        print("Массив окон(виджетов уведомлений):", self.windows_event)
 
     def post_server_response(self, body: any):
         # try:

@@ -3,9 +3,12 @@ import sys
 from PySide6.QtCore import Signal
 from PySide6.QtCore import Qt, QSize, QPoint, QRect, QUrl
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGraphicsBlurEffect
+from PySide6.QtWidgets import QWidget,QVBoxLayout, QHBoxLayout, QGraphicsBlurEffect
 from PySide6.QtWidgets import QApplication, QLabel, QTextBrowser
 from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
+from PySide6.QtGui import QPainter, QLinearGradient, QColor
+from PySide6.QtWidgets import QWidget, QApplication
+from Common.configparser import get_sound_toggle
 from FormEvent.BaseEvent import BaseEvent
 import webbrowser
 
@@ -118,19 +121,29 @@ class BaseWidgetEvent(QWidget):
         # Установка название окна(не показывается т.к встроенно в другой виджет)
         self.setWindowTitle("Уведомление")
 
+    def paintEvent(self, event):
+            painter = QPainter(self)
+            gradient = QLinearGradient(self.rect().topLeft(), self.rect().bottomRight())
+            gradient.setColorAt(0, QColor(255, 247, 227)) # светло-желтый цвет в начале
+            gradient.setColorAt(1, QColor(255, 255, 255)) # белый цвет в конце
+            painter.setBrush(gradient)
+            painter.drawRect(self.rect())
+
     def play_sound_new_document(self):
         self.player.setAudioOutput(self.audio)
         patch = self.resource_path("./sound/event.mp3")
         self.player.setSource(QUrl.fromLocalFile(patch))
         self.audio.setVolume(100)
-        self.player.play()
+        if get_sound_toggle():
+            self.player.play()
 
     def play_sound_read(self):
         self.player.setAudioOutput(self.audio)
         patch = self.resource_path("./sound/read.mp3")
         self.player.setSource(QUrl.fromLocalFile(patch))
         self.audio.setVolume(100)
-        self.player.play()
+        if get_sound_toggle():
+            self.player.play()
 
     def open_document(self):
         # Открываем браузер с договором

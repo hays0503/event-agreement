@@ -1,7 +1,9 @@
+import os
 import sys
-from PySide6.QtCore import QTimer
-from PySide6.QtGui import QIcon, QAction, QLinearGradient, QColor, QPainter
-from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QMessageBox, QWidget, QMainWindow, QPushButton, QHBoxLayout, QGraphicsBlurEffect
+from PySide6.QtGui import QIcon, QAction
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidget, QLabel, QVBoxLayout, QInputDialog, QLineEdit
+from Common.configparser import HOST, PASSWORD, PORT_SERVER, config_sound_toggle, get_sound_toggle
+from Common.get_interface_ip_address import get_interface_ip_address
 
 from Server.Server import Server
 
@@ -11,89 +13,85 @@ class MainWindow(QWidget):
         super().__init__()
         self.create_tray()
         self.create_form_gui()
-        self.set_style_form_gui()
 
         self.Server = Server(self)
         self.Server.run_tread()
-        # self.Server.start_server()
 
     def create_form_gui(self):
         self.setGeometry(200, 200, 300, 200)
-        self.setWindowTitle("Пример окна с кнопками")
+        self.setWindowTitle("Просмотр настроек")
+        label_host = QLabel()
+        label_port_server = QLabel()
+        label_ip_server = QLabel()
+        label_host.setText(f'Host(ip/address) куда отсылаем данные: {HOST}')
+        label_ip_server.setText(
+            f'Ip сервера куда принимаем: {get_interface_ip_address("Ethernet")}')
+        label_port_server.setText(
+            f'Port сервера куда принимаем: {PORT_SERVER}')
 
-        # создание кнопок
-        open_document_button = QPushButton("Открыть договор", self)
-        open_document_button.setStyleSheet(
-            "background-color: #4285f4; color: #000000; opacity: 1;")
+        layout = QVBoxLayout()
+        layout.addWidget(label_host)
+        layout.addWidget(label_ip_server)
+        layout.addWidget(label_port_server)
 
-        postpone_5min_button = QPushButton("Отложить на 5 минут", self)
-        postpone_5min_button.setStyleSheet(
-            "background-color: #00ffff; color: #000000; opacity: 1;")
-
-        postpone_15min_button = QPushButton("Отложить на 15 минут", self)
-        postpone_15min_button.setStyleSheet(
-            "background-color: #ff00ff; color: #000000; opacity: 1;")
-
-        postpone_1hour_button = QPushButton("Отложить на 1 час", self)
-        postpone_1hour_button.setStyleSheet(
-            "background-color: #ffff00; color: #000000; opacity: 1;")
-
-        # создание горизонтального менеджера компоновки
-        h_box = QHBoxLayout()
-        h_box.addWidget(open_document_button)
-        h_box.addWidget(postpone_5min_button)
-        h_box.addWidget(postpone_15min_button)
-        h_box.addWidget(postpone_1hour_button)
-        self.setLayout(h_box)
-
-        # подключение обработчиков событий
-        open_document_button.clicked.connect(self.open_document)
-        postpone_5min_button.clicked.connect(
-            lambda: self.postpone_notification(5))
-        postpone_15min_button.clicked.connect(
-            lambda: self.postpone_notification(15))
-        postpone_1hour_button.clicked.connect(
-            lambda: self.postpone_notification(60))
-
-    def set_style_form_gui(self):
-        self.setWindowOpacity(0.8)
-        blur = QGraphicsBlurEffect()
-        blur.setBlurRadius(10)  # Устанавливаем радиус размытия в пикселях
-        self.setGraphicsEffect(blur)
+        self.setLayout(layout)
 
     def create_tray(self):
         # Отображаем иконку приложения в трее
-        self.tray_icon = QSystemTrayIcon(QIcon("icon.png"), self)
+        patch = self.resource_path("./icon/icon.png")
+        self.tray_icon = QSystemTrayIcon(QIcon(patch), self)
         self.tray_icon.show()
 
         # Создаем контекстное меню
-        menu = QMenu(self)
+        self.menu = QMenu(self)
 
         # Создаем кнопки в меню
-        show_action = QAction("Показать", self)
-        exit_action = QAction("Выход", self)
-        menu.addAction(show_action)
-        menu.addAction(exit_action)
+        self.show_action = QAction("Показать", self)
+        if get_sound_toggle():
+            self.sound_action = QAction("[Звук выключить]", self)
+        else:
+            self.sound_action = QAction("[Звук включить]", self)
+        self.exit_action = QAction("Выход", self)
+        self.menu.addAction(self.show_action)
+        self.menu.addAction(self.sound_action)
+        self.menu.addAction(self.exit_action)
 
         # Устанавливаем контекстное меню на иконку в трее
-        self.tray_icon.setContextMenu(menu)
+        self.tray_icon.setContextMenu(self.menu)
 
         # При нажатии на "Показать" показываем главное окно
-        show_action.triggered.connect(self.showNormal)
+        self.show_action.triggered.connect(self.showNormal)
+
+        self.sound_action.triggered.connect(self.sound_toggle)
 
         # При нажатии на "Выход" закрываем приложение
-        exit_action.triggered.connect(app.quit)
+        self.exit_action.triggered.connect(self.ask_quit)
 
-    def open_document(self):
-        # Открываем браузер с договором
-        import webbrowser
-        webbrowser.open(
-            "http://192.168.0.9:3000/document-control/signing/documents-for-signing?id=121")
+    def sound_toggle(self):
+        if get_sound_toggle():
+            self.sound_action.setText("[Звук включить]")
+            config_sound_toggle(False)
+        else:
+            self.sound_action.setText("[Звук выключить]")
+            config_sound_toggle(True)
 
-    def postpone_notification(self, delay_minutes):
-        # Откладываем уведомление на delay_minutes минут
-        QTimer.singleShot(delay_minutes * 60 * 1000, lambda: QMessageBox.information(
-            self, "Напоминание", f"Прошло {delay_minutes} минут"))
+    def ask_quit(self):
+        password, okPressed = QInputDialog.getText(
+            self, "Введите пароль", "Пароль:", QLineEdit.Password, "")
+        print(PASSWORD)
+        if okPressed and password == PASSWORD:
+            print("Введенный пароль:", password)
+            app.quit()
+
+    def resource_path(self, relative_path):
+        """ Get absolute path to resource, works for dev and for PyInstaller """
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)
 
 
 if __name__ == '__main__':
@@ -101,6 +99,5 @@ if __name__ == '__main__':
     app.setQuitOnLastWindowClosed(False)
 
     window = MainWindow()
-    window.setWindowTitle("Пример трей-приложения")
     # window.show()
     sys.exit(app.exec())

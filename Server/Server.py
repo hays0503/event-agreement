@@ -86,17 +86,18 @@ class Server(QObject):
         login = user_data.get_login()
         domain = user_data.get_domain_name()
         json_msg = {
-            "ip_host": str(ip_address)+':'+str(PORT_SERVER),
+            "ip": str(ip_address)+':'+str(PORT_SERVER),
             "time_start": datetime.datetime.now().isoformat(),
             "status": "start",
-            "user data":  {"login": login, "domain_name": domain}
+            "user_data":  {"login": login, "domain_name": domain}
         }
         print(json_msg)
-        send_post(str(HOST), json_msg)
+        send_post(str(HOST)+"/create_app_notify_user", json_msg)
 
     def run_tread(self):
         self.server_threads = ThreadWithTrace(function=self.start_server)
         self.server_threads.start()
+        
         self.send_power_on()
 
     async def post_func(self, request):

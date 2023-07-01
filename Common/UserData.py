@@ -21,6 +21,7 @@ class UserData():
         """
             Запросить данные пользователя в системе (домен)
         """
-        domain_name = socket.getfqdn()
-        return domain_name
+        value = socket.getfqdn()
+        __domain_name = value.split('.')[1] if value else 'localhost'
+        return __domain_name
     
